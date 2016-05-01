@@ -23,7 +23,7 @@
     - python-tk
 
 - name: Clone Django Repository
-  git: repo=https://github.com/WillWeatherford/django-imager.git dest={{ django_home }} force=yes
+  git: repo=https://github.com/TeamReciprocity/reciprocity.git dest={{ django_home }} force=yes
 
 - name: Install Python Dependencies
   sudo: yes
@@ -33,7 +33,7 @@
 
 - name: Change Media Ownership
   sudo: yes
-  file: path={{django_home}}/imagersite/media owner=www-data recurse=yes state=directory
+  file: path={{django_home}}/reciprocity/media owner=www-data recurse=yes state=directory
 
 - name: Get DB Hostvars
   set_fact:
@@ -51,49 +51,24 @@
   environment:
     DATABASE_URL: "{{ db_url }}"
   django_manage:
-    app_path: "{{ django_home }}/imagersite"
-    settings: imagersite.production_settings
+    app_path: "{{ django_home }}/reciprocity"
+    settings: reciprocity.production
     command: makemigrations
 
 - name: Run Migrations
   environment:
     DATABASE_URL: "{{ db_url }}"
   django_manage:
-    app_path: "{{ django_home }}/imagersite"
-    settings: imagersite.production_settings
+    app_path: "{{ django_home }}/reciprocity"
+    settings: reciprocity.production
     command: migrate
 
 - name: Collect Static Files
   environment:
     DATABASE_URL: "{{ db_url }}"
   django_manage:
-    app_path: "{{ django_home }}/imagersite"
-    settings: imagersite.production_settings
+    app_path: "{{ django_home }}/reciprocity"
+    settings: reciprocity.production
     command: collectstatic
 
-- name: Create Cache Table
-  environment:
-    DATABASE_URL: "{{ db_url }}"
-  django_manage:
-    app_path: "{{ django_home }}/imagersite"
-    settings: imagersite.production_settings
-    cache_table: image_cache_table
-    command: createcachetable
 
-- name: Make Sorl Migrations
-  sudo: yes
-  environment:
-    DATABASE_URL: "{{ db_url }}"
-  django_manage:
-    app_path: "{{ django_home }}/imagersite"
-    settings: imagersite.production_settings
-    command: makemigrations thumbnail
-
-- name: Run Sorl Migrations
-  sudo: yes
-  environment:
-    DATABASE_URL: "{{ db_url }}"
-  django_manage:
-    app_path: "{{ django_home }}/imagersite"
-    settings: imagersite.production_settings
-    command: migrate thumbnail
