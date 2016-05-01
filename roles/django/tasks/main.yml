@@ -12,18 +12,10 @@
     - python-psycopg2
     - git
     - libjpeg-dev
-    - libtiff5-dev
     - libjpeg8-dev
-    - zlib1g-dev
-    - libfreetype6-dev
-    - liblcms2-dev
-    - libwebp-dev
-    - tcl8.6-dev
-    - tk8.6-dev
-    - python-tk
 
 - name: Clone Django Repository
-  git: repo=https://github.com/TeamReciprocity/reciprocity.git dest={{ django_home }} force=yes
+  git: repo=https://github.com/TeamReciprocity/reciprocity.git dest={{ django_home }} force=yes version=staging
 
 - name: Install Python Dependencies
   sudo: yes

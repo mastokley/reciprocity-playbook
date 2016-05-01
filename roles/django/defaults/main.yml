@@ -1,2 +1,2 @@
 django_home: /home/ubuntu/reciprocity
-rds_db_instance: reciprocitymaster
+rds_db_instance: reciprocitystaging
