@@ -6,21 +6,34 @@
   with_items:
     - build-essential
     - python-dev
-    - python-pip
     - postgresql-client
     - libpq-dev
     - python-pip
     - python-psycopg2
     - git
+    - libjpeg-dev
+    - libtiff5-dev
+    - libjpeg8-dev
+    - zlib1g-dev
+    - libfreetype6-dev
+    - liblcms2-dev
+    - libwebp-dev
+    - tcl8.6-dev
+    - tk8.6-dev
+    - python-tk
 
 - name: Clone Django Repository
-  git: repo=https://github.com/cewing/djangoblog_uwpce.git dest={{ django_home }} force=yes
+  git: repo=https://github.com/WillWeatherford/django-imager.git dest={{ django_home }} force=yes
 
 - name: Install Python Dependencies
   sudo: yes
   pip:
     state: present
     requirements: "{{ django_home }}/requirements.txt"
+
+- name: Change Media Ownership
+  sudo: yes
+  file: path={{django_home}}/imagersite/media owner=www-data recurse=yes state=directory
 
 - name: Get DB Hostvars
   set_fact:
@@ -31,21 +44,56 @@
 
 
 - name: Set DB URL
-  set_fact: 
+  set_fact:
     db_url: "{{ db_host.ec2_engine }}://{{ db_host.ec2_master_username }}:{{ db_password }}@{{ db_host.ec2__address }}:{{ db_host.ec2__port }}/{{ db_host.ec2_DBName }}"
+
+- name: Make Migrations
+  environment:
+    DATABASE_URL: "{{ db_url }}"
+  django_manage:
+    app_path: "{{ django_home }}/imagersite"
+    settings: imagersite.production_settings
+    command: makemigrations
 
 - name: Run Migrations
   environment:
     DATABASE_URL: "{{ db_url }}"
   django_manage:
-    app_path: "{{ django_home }}"
-    settings: mysite.production
+    app_path: "{{ django_home }}/imagersite"
+    settings: imagersite.production_settings
     command: migrate
 
 - name: Collect Static Files
   environment:
     DATABASE_URL: "{{ db_url }}"
   django_manage:
-    app_path: "{{ django_home }}"
-    settings: mysite.production
+    app_path: "{{ django_home }}/imagersite"
+    settings: imagersite.production_settings
     command: collectstatic
+
+- name: Create Cache Table
+  environment:
+    DATABASE_URL: "{{ db_url }}"
+  django_manage:
+    app_path: "{{ django_home }}/imagersite"
+    settings: imagersite.production_settings
+    cache_table: image_cache_table
+    command: createcachetable
+
+- name: Make Sorl Migrations
+  sudo: yes
+  environment:
+    DATABASE_URL: "{{ db_url }}"
+  django_manage:
+    app_path: "{{ django_home }}/imagersite"
+    settings: imagersite.production_settings
+    command: makemigrations thumbnail
+
+- name: Run Sorl Migrations
+  sudo: yes
+  environment:
+    DATABASE_URL: "{{ db_url }}"
+  django_manage:
+    app_path: "{{ django_home }}/imagersite"
+    settings: imagersite.production_settings
+    command: migrate thumbnail
