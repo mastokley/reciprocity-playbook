@@ -10,4 +10,6 @@ chdir {{ django_home }}/reciprocity
 env DJANGO_SETTINGS_MODULE=reciprocity.production
 env DATABASE_URL={{ db_url }}
 env SECRET_KEY={{ secret_key }}
+env EMAIL_HOST_USER={{ email_user}}
+env EMAIL_HOST_PASSWORD={{ host_password }}
 exec gunicorn -b 127.0.0.1:8000 -w 4 reciprocity.wsgi --error-logfile /tmp/gunicorn-error.log

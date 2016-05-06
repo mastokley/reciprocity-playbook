@@ -15,7 +15,7 @@
     - libjpeg8-dev
 
 - name: Clone Django Repository
-  git: repo=https://github.com/TeamReciprocity/reciprocity.git dest={{ django_home }} force=yes version=staging
+  git: repo=https://github.com/TeamReciprocity/reciprocity.git dest={{ django_home }} force=yes version={{gh_version}}
 
 - name: Install Python Dependencies
   sudo: yes
@@ -63,4 +63,41 @@
     settings: reciprocity.production
     command: collectstatic
 
+- name: Use Fixture to Populate Database
+  environment:
+    DATABASE_URL: "{{ db_url }}"
+  django_manage:
+    app_path: "{{ django_home }}/reciprocity"
+    settings: reciprocity.production
+    fixtures: users.json
+    command: loaddata
 
+- name: Use Recipe Fixture to Populate Database
+  sudo: yes
+  environment:
+    DATABASE_URL: "{{ db_url }}"
+  django_manage:
+    app_path: "{{ django_home }}/reciprocity"
+    settings: reciprocity.production
+    fixtures: recipes.json
+    command: loaddata
+
+- name: Use ingredients Fixture to Populate Database
+  sudo: yes
+  environment:
+    DATABASE_URL: "{{ db_url }}"
+  django_manage:
+    app_path: "{{ django_home }}/reciprocity"
+    settings: reciprocity.production
+    fixtures: ingredients.json
+    command: loaddata
+
+- name: Use Relationship Fixture to Populate Database
+  sudo: yes
+  environment:
+    DATABASE_URL: "{{ db_url }}"
+  django_manage:
+    app_path: "{{ django_home }}/reciprocity"
+    settings: reciprocity.production
+    fixtures: recipeingredientrelationship.json
+    command: loaddata
