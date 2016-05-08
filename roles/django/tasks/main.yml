@@ -12,18 +12,10 @@
     - python-psycopg2
     - git
     - libjpeg-dev
-    - libtiff5-dev
     - libjpeg8-dev
-    - zlib1g-dev
-    - libfreetype6-dev
-    - liblcms2-dev
-    - libwebp-dev
-    - tcl8.6-dev
-    - tk8.6-dev
-    - python-tk
 
 - name: Clone Django Repository
-  git: repo=https://github.com/WillWeatherford/django-imager.git dest={{ django_home }} force=yes
+  git: repo=https://github.com/TeamReciprocity/reciprocity.git dest={{ django_home }} force=yes version={{gh_version}}
 
 - name: Install Python Dependencies
   sudo: yes
@@ -33,7 +25,7 @@
 
 - name: Change Media Ownership
   sudo: yes
-  file: path={{django_home}}/imagersite/media owner=www-data recurse=yes state=directory
+  file: path={{django_home}}/reciprocity/media owner=www-data recurse=yes state=directory
 
 - name: Get DB Hostvars
   set_fact:
@@ -51,49 +43,61 @@
   environment:
     DATABASE_URL: "{{ db_url }}"
   django_manage:
-    app_path: "{{ django_home }}/imagersite"
-    settings: imagersite.production_settings
+    app_path: "{{ django_home }}/reciprocity"
+    settings: reciprocity.production
     command: makemigrations
 
 - name: Run Migrations
   environment:
     DATABASE_URL: "{{ db_url }}"
   django_manage:
-    app_path: "{{ django_home }}/imagersite"
-    settings: imagersite.production_settings
+    app_path: "{{ django_home }}/reciprocity"
+    settings: reciprocity.production
     command: migrate
 
 - name: Collect Static Files
   environment:
     DATABASE_URL: "{{ db_url }}"
   django_manage:
-    app_path: "{{ django_home }}/imagersite"
-    settings: imagersite.production_settings
+    app_path: "{{ django_home }}/reciprocity"
+    settings: reciprocity.production
     command: collectstatic
 
-- name: Create Cache Table
+- name: Use Fixture to Populate Database
   environment:
     DATABASE_URL: "{{ db_url }}"
   django_manage:
-    app_path: "{{ django_home }}/imagersite"
-    settings: imagersite.production_settings
-    cache_table: image_cache_table
-    command: createcachetable
+    app_path: "{{ django_home }}/reciprocity"
+    settings: reciprocity.production
+    fixtures: users.json
+    command: loaddata
 
-- name: Make Sorl Migrations
+- name: Use Recipe Fixture to Populate Database
   sudo: yes
   environment:
     DATABASE_URL: "{{ db_url }}"
   django_manage:
-    app_path: "{{ django_home }}/imagersite"
-    settings: imagersite.production_settings
-    command: makemigrations thumbnail
+    app_path: "{{ django_home }}/reciprocity"
+    settings: reciprocity.production
+    fixtures: recipes.json
+    command: loaddata
 
-- name: Run Sorl Migrations
+- name: Use ingredients Fixture to Populate Database
   sudo: yes
   environment:
     DATABASE_URL: "{{ db_url }}"
   django_manage:
-    app_path: "{{ django_home }}/imagersite"
-    settings: imagersite.production_settings
-    command: migrate thumbnail
+    app_path: "{{ django_home }}/reciprocity"
+    settings: reciprocity.production
+    fixtures: ingredients.json
+    command: loaddata
+
+- name: Use Relationship Fixture to Populate Database
+  sudo: yes
+  environment:
+    DATABASE_URL: "{{ db_url }}"
+  django_manage:
+    app_path: "{{ django_home }}/reciprocity"
+    settings: reciprocity.production
+    fixtures: recipeingredientrelationship.json
+    command: loaddata
