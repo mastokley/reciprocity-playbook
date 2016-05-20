@@ -1,4 +1,3 @@
-# Django Deployment for Codefellows
+# Django Deployment for Reciprocity Project
 
-This repository contains ansible roles and playbooks which implement a basic
-deployment of Django to an AWS ec2 instance.
+This repository contains ansible roles and playbooks to deploy the Reciprocity web app.
